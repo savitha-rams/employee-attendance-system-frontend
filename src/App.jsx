@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EmployeeListPage from "./pages/EmployeeListPage";
 import EmployeeFormPage from "./pages/EmployeeFormPage";
+import LeaveListPage from "./pages/LeaveListPage";
+import ApplyLeavePage from "./pages/ApplyLeavePage";
 
 function App() {
   return (
@@ -41,6 +43,22 @@ function App() {
           element={
             <ProtectedRoute>
               <EmployeeFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves"
+          element={
+            <ProtectedRoute>
+              <LeaveListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/leaves/apply"
+          element={
+            <ProtectedRoute>
+              <ApplyLeavePage />
             </ProtectedRoute>
           }
         />

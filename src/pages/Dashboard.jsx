@@ -18,6 +18,13 @@ function Dashboard() {
       >
         Employees
       </button>
+      <button
+        type="button"
+        className="btn btn-success me-2"
+        onClick={() => navigate("/leaves")}
+      >
+        Leave Management
+      </button>
 
       <button className="btn btn-danger" onClick={handleLogout}>
         Logout

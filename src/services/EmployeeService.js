@@ -21,7 +21,6 @@ const updateEmployee = async (id, employee) => {
 };
 
 const deleteEmployee = async (id) => {
-  alert(`Attempting to delete employee with ID: ${id}`);
   const response = await apiClient.delete(`/employees/${id}`);
   return response.data;
 };
