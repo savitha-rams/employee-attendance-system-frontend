@@ -6,6 +6,8 @@ import EmployeeListPage from "./pages/EmployeeListPage";
 import EmployeeFormPage from "./pages/EmployeeFormPage";
 import LeaveListPage from "./pages/LeaveListPage";
 import ApplyLeavePage from "./pages/ApplyLeavePage";
+import AttendanceListPage from "./pages/AttendanceListPage";
+import AttendanceActionPage from "./pages/AttendanceActionPage";
 
 function App() {
   return (
@@ -59,6 +61,22 @@ function App() {
           element={
             <ProtectedRoute>
               <ApplyLeavePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attendance"
+          element={
+            <ProtectedRoute>
+              <AttendanceListPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attendance/action"
+          element={
+            <ProtectedRoute>
+              <AttendanceActionPage />
             </ProtectedRoute>
           }
         />

@@ -25,7 +25,13 @@ function Dashboard() {
       >
         Leave Management
       </button>
-
+      <button
+        type="button"
+        className="btn btn-info me-2"
+        onClick={() => navigate("/attendance")}
+      >
+        Attendance Management
+      </button>
       <button className="btn btn-danger" onClick={handleLogout}>
         Logout
       </button>
