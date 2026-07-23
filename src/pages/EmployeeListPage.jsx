@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EmployeeService from "../services/EmployeeService";
+import DashboardButton from "../components/DashboardButton";
 
 function EmployeeListPage() {
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
 
   const loadEmployees = async () => {
     try {
+      setError("");
       const data = await EmployeeService.getAllEmployees();
 
       setEmployees(data);
     } catch (error) {
-      setError("Unable to load employees.");
+      setError(error.response?.data?.message || "Unable to load employees.");
     } finally {
       setLoading(false);
     }
@@ -25,11 +28,11 @@ function EmployeeListPage() {
   }, []);
 
   if (loading) {
-    return <h4>Loading employees...</h4>;
-  }
-
-  if (error) {
-    return <h4>{error}</h4>;
+    return (
+      <div className="container mt-4">
+        <p>Loading employees...</p>
+      </div>
+    );
   }
 
   const handleDelete = async (id) => {
@@ -42,18 +45,26 @@ function EmployeeListPage() {
     }
 
     try {
+      setError("");
+      setDeletingId(id);
       await EmployeeService.deleteEmployee(id);
 
       setEmployees((currentEmployees) =>
         currentEmployees.filter((employee) => employee.employeeId !== id),
       );
     } catch (error) {
-      setError("Unable to delete employee. Please try again.");
+      setError(
+        error.response?.data?.message ||
+          "Unable to delete employee. Please try again.",
+      );
+    } finally {
+      setDeletingId(null);
     }
   };
 
   return (
     <div className="container mt-4">
+      <DashboardButton className="mb-4" />
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="mb-0">Employees</h2>
 
@@ -66,53 +77,63 @@ function EmployeeListPage() {
         </button>
       </div>
 
-      <table className="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>Actions</th>
-            <th>ID</th>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {!error && employees.length === 0 && (
+        <div className="alert alert-info">No employees found.</div>
+      )}
 
-            <th>First Name</th>
+      {!error && employees.length > 0 && (
+        <table className="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
 
-            <th>Last Name</th>
+              <th>First Name</th>
 
-            <th>Email</th>
-          </tr>
-        </thead>
+              <th>Last Name</th>
 
-        <tbody>
-          {employees.map((employee) => (
-            <tr key={employee.employeeId}>
-              <td>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-primary me-2"
-                  onClick={() =>
-                    navigate(`/employees/edit/${employee.employeeId}`)
-                  }
-                >
-                  Edit
-                </button>
-
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleDelete(employee.employeeId)}
-                >
-                  Delete
-                </button>
-              </td>
-              <td>{employee.employeeId}</td>
-
-              <td>{employee.firstName}</td>
-
-              <td>{employee.lastName}</td>
-
-              <td>{employee.email}</td>
+              <th>Email</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {employees.map((employee) => (
+              <tr key={employee.employeeId}>
+                <td>{employee.employeeId}</td>
+
+                <td>{employee.firstName}</td>
+
+                <td>{employee.lastName}</td>
+
+                <td>{employee.email}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-primary me-2"
+                    onClick={() =>
+                      navigate(`/employees/edit/${employee.employeeId}`)
+                    }
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => handleDelete(employee.employeeId)}
+                    disabled={deletingId === employee.employeeId}
+                  >
+                    {deletingId === employee.employeeId
+                      ? "Deleting..."
+                      : "Delete"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

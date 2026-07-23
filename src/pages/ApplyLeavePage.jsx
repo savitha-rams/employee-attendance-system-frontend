@@ -15,6 +15,7 @@ function ApplyLeavePage() {
   });
 
   const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   const handleChange = (event) => {
@@ -24,11 +25,17 @@ function ApplyLeavePage() {
       ...currentLeaveRequest,
       [name]: value,
     }));
+
+    setValidationErrors((previous) => ({
+      ...previous,
+      [name]: "",
+    }));
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    setValidationErrors({});
     setSaving(true);
 
     try {
@@ -39,7 +46,21 @@ function ApplyLeavePage() {
 
       navigate("/leaves");
     } catch (error) {
-      setError("Unable to apply for leave. Please check the entered values.");
+      const responseData = error.response?.data;
+
+      if (responseData?.validationErrors) {
+        setValidationErrors(responseData.validationErrors);
+
+        setError(
+          responseData.message || "Please correct the highlighted fields.",
+        );
+      } else {
+        setValidationErrors({});
+
+        setError(
+          responseData?.message || responseData || "Unable to apply for leave.",
+        );
+      }
     } finally {
       setSaving(false);
     }
@@ -62,11 +83,18 @@ function ApplyLeavePage() {
               id="startDate"
               name="startDate"
               type="date"
-              className="form-control"
+              className={`form-control ${
+                validationErrors.startDate ? "is-invalid" : ""
+              }`}
               value={leaveRequest.startDate}
               onChange={handleChange}
               required
             />
+            {validationErrors.startDate && (
+              <div className="invalid-feedback">
+                {validationErrors.startDate}
+              </div>
+            )}
           </div>
 
           <div className="col-md-6 mb-3">
@@ -78,11 +106,16 @@ function ApplyLeavePage() {
               id="endDate"
               name="endDate"
               type="date"
-              className="form-control"
+              className={`form-control ${
+                validationErrors.endDate ? "is-invalid" : ""
+              }`}
               value={leaveRequest.endDate}
               onChange={handleChange}
               required
             />
+            {validationErrors.endDate && (
+              <div className="invalid-feedback">{validationErrors.endDate}</div>
+            )}
           </div>
         </div>
 
@@ -94,14 +127,20 @@ function ApplyLeavePage() {
           <select
             id="leaveType"
             name="leaveType"
-            className="form-select"
+            className={`form-select ${
+              validationErrors.leaveType ? "is-invalid" : ""
+            }`}
             value={leaveRequest.leaveType}
             onChange={handleChange}
+            required
           >
             <option value="ANNUAL">Annual Leave</option>
             <option value="SICK">Sick Leave</option>
             <option value="CASUAL">Casual Leave</option>
           </select>
+          {validationErrors.leaveType && (
+            <div className="invalid-feedback">{validationErrors.leaveType}</div>
+          )}
         </div>
 
         <div className="mb-3">
@@ -112,12 +151,17 @@ function ApplyLeavePage() {
           <textarea
             id="reason"
             name="reason"
-            className="form-control"
+            className={`form-control ${
+              validationErrors.reason ? "is-invalid" : ""
+            }`}
             rows="3"
             value={leaveRequest.reason}
             onChange={handleChange}
             required
           />
+          {validationErrors.reason && (
+            <div className="invalid-feedback">{validationErrors.reason}</div>
+          )}
         </div>
 
         <div className="mb-4">
@@ -129,11 +173,18 @@ function ApplyLeavePage() {
             id="employeeId"
             name="employeeId"
             type="number"
-            className="form-control"
+            className={`form-control ${
+              validationErrors.employeeId ? "is-invalid" : ""
+            }`}
             value={leaveRequest.employeeId}
             onChange={handleChange}
             required
           />
+          {validationErrors.employeeId && (
+            <div className="invalid-feedback">
+              {validationErrors.employeeId}
+            </div>
+          )}
         </div>
 
         <div>

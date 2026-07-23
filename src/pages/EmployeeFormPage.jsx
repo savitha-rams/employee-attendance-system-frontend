@@ -19,11 +19,14 @@ function EmployeeFormPage() {
   });
 
   const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (event) => {
     console.log("Form submitted with employee data:", employee);
     event.preventDefault();
+    setError("");
+    setValidationErrors({});
     setSaving(true);
     try {
       if (isEditMode) {
@@ -34,7 +37,16 @@ function EmployeeFormPage() {
 
       navigate("/employees");
     } catch (error) {
-      setError("Unable to save employee. Please try again.");
+      const responseData = error.response?.data;
+      if (responseData?.validationErrors) {
+        setValidationErrors(responseData.validationErrors);
+        setError(
+          responseData.message || "Please correct the highlighted fields.",
+        );
+      } else {
+        setValidationErrors({});
+        setError(responseData?.message || "Unable to save the record.");
+      }
     } finally {
       setSaving(false);
     }
@@ -55,7 +67,9 @@ function EmployeeFormPage() {
         password: "",
       });
     } catch (error) {
-      setError("Unable to load employee details.");
+      setError(
+        error.response?.data?.message || "Unable to load employee details.",
+      );
     }
   };
 
@@ -65,6 +79,10 @@ function EmployeeFormPage() {
     setEmployee((currentEmployee) => ({
       ...currentEmployee,
       [name]: value,
+    }));
+    setValidationErrors((previous) => ({
+      ...previous,
+      [name]: "",
     }));
   };
 
@@ -85,10 +103,18 @@ function EmployeeFormPage() {
               id="firstName"
               name="firstName"
               type="text"
-              className="form-control"
+              className={`form-control ${
+                validationErrors.firstName ? "is-invalid" : ""
+              }`}
               value={employee.firstName}
               onChange={handleChange}
+              required
             />
+            {validationErrors.firstName && (
+              <div className="invalid-feedback">
+                {validationErrors.firstName}
+              </div>
+            )}
           </div>
 
           <div className="col-md-6 mb-3">
@@ -100,10 +126,18 @@ function EmployeeFormPage() {
               id="lastName"
               name="lastName"
               type="text"
-              className="form-control"
+              className={`form-control ${
+                validationErrors.lastName ? "is-invalid" : ""
+              }`}
               value={employee.lastName}
               onChange={handleChange}
+              required
             />
+            {validationErrors.lastName && (
+              <div className="invalid-feedback">
+                {validationErrors.lastName}
+              </div>
+            )}
           </div>
         </div>
 
@@ -116,10 +150,16 @@ function EmployeeFormPage() {
             id="email"
             name="email"
             type="email"
-            className="form-control"
+            className={`form-control ${
+              validationErrors.email ? "is-invalid" : ""
+            }`}
             value={employee.email}
             onChange={handleChange}
+            required
           />
+          {validationErrors.email && (
+            <div className="invalid-feedback">{validationErrors.email}</div>
+          )}
         </div>
 
         <div className="mb-3">
@@ -131,7 +171,9 @@ function EmployeeFormPage() {
             id="password"
             name="password"
             type="password"
-            className="form-control"
+            className={`form-control ${
+              validationErrors.password ? "is-invalid" : ""
+            }`}
             value={employee.password}
             onChange={handleChange}
             placeholder={
@@ -139,7 +181,11 @@ function EmployeeFormPage() {
                 ? "Leave blank to keep existing password"
                 : "Enter password"
             }
+            required
           />
+          {validationErrors.password && (
+            <div className="invalid-feedback">{validationErrors.password}</div>
+          )}
         </div>
 
         <div className="mb-3">
@@ -150,10 +196,18 @@ function EmployeeFormPage() {
           <input
             id="department"
             name="department"
-            className="form-control"
+            className={`form-control ${
+              validationErrors.department ? "is-invalid" : ""
+            }`}
             value={employee.department}
             onChange={handleChange}
+            required
           />
+          {validationErrors.department && (
+            <div className="invalid-feedback">
+              {validationErrors.department}
+            </div>
+          )}
         </div>
 
         <div className="mb-4">
@@ -164,13 +218,18 @@ function EmployeeFormPage() {
           <select
             id="role"
             name="role"
-            className="form-select"
+            className={`form-select ${
+              validationErrors.role ? "is-invalid" : ""
+            }`}
             value={employee.role}
             onChange={handleChange}
           >
             <option value="EMPLOYEE">Employee</option>
             <option value="ADMIN">Admin</option>
           </select>
+          {validationErrors.role && (
+            <div className="invalid-feedback">{validationErrors.role}</div>
+          )}
         </div>
 
         <div>

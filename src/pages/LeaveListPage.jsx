@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import DashboardButton from "../components/DashboardButton";
+
 import LeaveService from "../services/LeaveService";
 
 function LeaveListPage() {
@@ -9,13 +11,17 @@ function LeaveListPage() {
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
 
   const loadLeaves = async () => {
+    setError("");
     try {
       const data = await LeaveService.getAllLeaves();
       setLeaves(data);
     } catch (error) {
-      setError("Unable to load leave requests.");
+      setError(
+        error.response?.data?.message || "Unable to load leave requests.",
+      );
     } finally {
       setLoading(false);
     }
@@ -34,6 +40,9 @@ function LeaveListPage() {
       return;
     }
 
+    setError("");
+    setDeletingId(id);
+
     try {
       await LeaveService.deleteLeave(id);
 
@@ -41,16 +50,25 @@ function LeaveListPage() {
         currentLeaves.filter((leave) => leave.leaveId !== id),
       );
     } catch (error) {
-      setError("Unable to delete leave request.");
+      setError(
+        error.response?.data?.message || "Unable to delete leave request.",
+      );
+    } finally {
+      setDeletingId(null);
     }
   };
 
   if (loading) {
-    return <h4>Loading leave requests...</h4>;
+    return (
+      <div className="container mt-4">
+        <p>Loading leave requests...</p>
+      </div>
+    );
   }
 
   return (
     <div className="container mt-4">
+      <DashboardButton className="mb-4" />
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="mb-0">Leave Requests</h2>
 
@@ -64,44 +82,48 @@ function LeaveListPage() {
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
-
-      <table className="table table-bordered table-striped">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Employee ID</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Leave Type</th>
-            <th>Reason</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {leaves.map((leave) => (
-            <tr key={leave.leaveId}>
-              <td>{leave.leaveId}</td>
-              <td>{leave.employeeId}</td>
-              <td>{leave.startDate}</td>
-              <td>{leave.endDate}</td>
-              <td>{leave.leaveType}</td>
-              <td>{leave.reason}</td>
-              <td>{leave.status}</td>
-              <td>
-                <button
-                  type="button"
-                  className="btn btn-sm btn-outline-danger"
-                  onClick={() => handleDelete(leave.leaveId)}
-                >
-                  Delete
-                </button>
-              </td>
+      {leaves.length === 0 ? (
+        <div className="alert alert-info">No leave requests found.</div>
+      ) : (
+        <table className="table table-bordered table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Employee ID</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Leave Type</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {leaves.map((leave) => (
+              <tr key={leave.leaveId}>
+                <td>{leave.leaveId}</td>
+                <td>{leave.employeeId}</td>
+                <td>{leave.startDate}</td>
+                <td>{leave.endDate}</td>
+                <td>{leave.leaveType}</td>
+                <td>{leave.reason}</td>
+                <td>{leave.status}</td>
+                <td>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger"
+                    onClick={() => handleDelete(leave.leaveId)}
+                    disabled={deletingId === leave.leaveId}
+                  >
+                    {deletingId === leave.leaveId ? "Deleting..." : "Delete"}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

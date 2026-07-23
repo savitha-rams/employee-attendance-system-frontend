@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import AttendanceService from "../services/AttendanceService";
+import DashboardButton from "../components/DashboardButton";
 
 function AttendanceListPage() {
   const navigate = useNavigate();
@@ -17,7 +18,9 @@ function AttendanceListPage() {
       const data = await AttendanceService.getAllAttendances();
       setAttendances(data);
     } catch (error) {
-      setError("Unable to load attendance records.");
+      setError(
+        error.response?.data?.message || "Unable to load attendance records.",
+      );
     } finally {
       setLoading(false);
     }
@@ -28,11 +31,16 @@ function AttendanceListPage() {
   }, []);
 
   if (loading) {
-    return <h4>Loading attendance records...</h4>;
+    return (
+      <div className="container mt-4">
+        <p>Loading attendance records...</p>
+      </div>
+    );
   }
 
   return (
     <div className="container mt-4">
+      <DashboardButton className="mb-4" />
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h2 className="mb-0">Attendance Records</h2>
 
@@ -47,11 +55,13 @@ function AttendanceListPage() {
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {attendances.length === 0 ? (
+      {!error && attendances.length === 0 && (
         <div className="alert alert-info">
           No attendance records are available.
         </div>
-      ) : (
+      )}
+
+      {!error && attendances.length > 0 && (
         <table className="table table-bordered table-striped">
           <thead>
             <tr>

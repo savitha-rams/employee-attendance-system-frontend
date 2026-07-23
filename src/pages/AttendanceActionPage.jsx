@@ -5,6 +5,7 @@ import AttendanceService from "../services/AttendanceService";
 function AttendanceActionPage() {
   const [employeeId, setEmployeeId] = useState("");
   const [error, setError] = useState("");
+  const [validationErrors, setValidationErrors] = useState({});
   const [message, setMessage] = useState("");
   const [processing, setProcessing] = useState(false);
 
@@ -17,6 +18,7 @@ function AttendanceActionPage() {
 
     setProcessing(true);
     setError("");
+    setValidationErrors({});
     setMessage("");
 
     try {
@@ -24,7 +26,16 @@ function AttendanceActionPage() {
       setMessage("Checked in successfully.");
       setEmployeeId("");
     } catch (error) {
-      setError("Unable to check in.");
+      const responseData = error.response?.data;
+      if (responseData?.validationErrors) {
+        setValidationErrors(responseData.validationErrors);
+        setError(
+          responseData.message || "Please correct the highlighted fields.",
+        );
+      } else {
+        setValidationErrors({});
+        setError(responseData?.message || "Unable to check in.");
+      }
     } finally {
       setProcessing(false);
     }
@@ -39,6 +50,7 @@ function AttendanceActionPage() {
 
     setProcessing(true);
     setError("");
+    setValidationErrors({});
     setMessage("");
 
     try {
@@ -46,15 +58,33 @@ function AttendanceActionPage() {
       setMessage("Checked out successfully.");
       setEmployeeId("");
     } catch (error) {
-      setError("Unable to check out.");
+      const responseData = error.response?.data;
+      if (responseData?.validationErrors) {
+        setValidationErrors(responseData.validationErrors);
+        setError(
+          responseData.message || "Please correct the highlighted fields.",
+        );
+      } else {
+        setValidationErrors({});
+        setError(responseData?.message || "Unable to check out.");
+      }
     } finally {
       setProcessing(false);
     }
   };
 
+  const handleEmployeeIdChange = (event) => {
+    setEmployeeId(event.target.value);
+
+    setValidationErrors((previous) => ({
+      ...previous,
+      employeeId: "",
+    }));
+  };
+
   return (
     <div className="container mt-5">
-      <h2>Attendance Action</h2>
+      <h2>Attendance</h2>
 
       <div className="mb-3">
         <label htmlFor="employeeId" className="form-label">
@@ -63,12 +93,15 @@ function AttendanceActionPage() {
 
         <input
           type="number"
-          className="form-control"
+          className={`form-control ${validationErrors.employeeId ? "is-invalid" : ""}`}
           id="employeeId"
           value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
+          onChange={handleEmployeeIdChange}
           min="1"
         />
+        {validationErrors.employeeId && (
+          <div className="invalid-feedback">{validationErrors.employeeId}</div>
+        )}
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
